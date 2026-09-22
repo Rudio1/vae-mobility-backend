@@ -1,0 +1,51 @@
+---
+description: Soft delete, auditoria e controle de concorrência
+globs: src/VaeMobility.Domain/**,src/VaeMobility.Infra.Data/**
+alwaysApply: false
+---
+
+# Auditoria e Soft Delete
+
+## Campos padrão (Entity base)
+
+Já existem em `Entity`: `CreatedAt`, `UpdatedAt`.
+
+Adicionar conforme necessidade:
+
+| Campo | Tipo | Uso |
+|---|---|---|
+| `CreatedBy` | `Guid?` | Usuário que criou |
+| `UpdatedBy` | `Guid?` | Usuário que alterou |
+| `IsDeleted` | `bool` | Soft delete |
+| `DeletedAt` | `DateTime?` | Quando foi excluído |
+| `RowVersion` | `byte[]` | Concorrência otimista |
+
+## Soft Delete
+
+```csharp
+// Entity
+public void Delete()
+{
+    IsDeleted = true;
+    DeletedAt = DateTime.UtcNow;
+    MarkAsUpdated();
+}
+```
+
+## EF — filtro global
+
+```csharp
+// Na configuration ou OnModelCreating
+builder.HasQueryFilter(e => !e.IsDeleted);
+```
+
+- `Remove` do repository vira soft delete, não `DELETE` físico.
+- Exclusão física apenas em casos excepcionais e documentados.
+
+## Auditoria automática
+
+Interceptar `SaveChanges` no `AppDbContext` para preencher `CreatedAt`/`UpdatedAt`/`CreatedBy`/`UpdatedBy`.
+
+## Concorrência
+
+Usar `RowVersion` com `[Timestamp]` em entidades críticas.

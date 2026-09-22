@@ -1,0 +1,50 @@
+---
+description: Camada Application — orquestração sem regra de negócio
+globs: src/VaeMobility.Application/**
+alwaysApply: false
+---
+
+# Application
+
+## Responsabilidade
+
+Application **apenas orquestra** casos de uso. Coordena Domain Services e `IUnitOfWork`.
+
+## Fluxo
+
+```
+Handler recebe Command/Query
+  → valida entrada (FluentValidation)
+  → chama Domain Service (regras + repositórios)
+  → SaveChanges via IUnitOfWork
+  → mapeia Entity → Response/DTO
+```
+
+## O que Application faz
+
+- Implementar handlers (`ICreateProductHandler`)
+- Mapear Command/Query → chamadas de Domain Service
+- Mapear Entity → Response
+- Commit transacional via `IUnitOfWork`
+
+## O que Application NUNCA faz
+
+```
+❌ Injetar ou chamar I*Repository diretamente
+❌ if (order.Total > 1000) order.Approve()  // regra de negócio
+❌ Validar CPF com algoritmo de domínio
+❌ Acessar DbContext diretamente
+❌ Retornar Entity para o Controller
+```
+
+## Organização
+
+```
+Application/Product/Commands/CreateProduct/
+  CreateProductCommand.cs
+  ICreateProductHandler.cs
+  CreateProductHandler.cs
+  CreateProductValidator.cs
+```
+
+Ver também: `17-use-cases.mdc`, `10-validation.mdc`.

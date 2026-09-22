@@ -1,0 +1,59 @@
+---
+description: Value Objects — Email, Cpf, Money, encapsular validação
+globs: src/VaeMobility.Domain/**
+alwaysApply: false
+---
+
+# Value Objects
+
+## Quando criar
+
+Valor com regras próprias, comparado por valor (não identidade):
+
+- `Email`, `Cpf`, `Cnpj`, `Money`, `Percentage`, `Address`, `PhoneNumber`
+
+## Base
+
+Herdar de `VaeMobility.Domain.Generic.ValueObjects.ValueObject` e implementar `GetEqualityComponents()`.
+
+```csharp
+public sealed class Email : ValueObject
+{
+    public string Value { get; }
+
+    private Email(string value) => Value = value;
+
+    public static Email Create(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || !value.Contains('@'))
+            throw new BusinessException("Invalid email address.");
+        return new Email(value.Trim().ToLowerInvariant());
+    }
+
+    protected override IEnumerable<object?> GetEqualityComponents()
+    {
+        yield return Value;
+    }
+}
+```
+
+## Uso na Entity
+
+```csharp
+public class User : AggregateRoot
+{
+    public Email Email { get; private set; } = null!;
+
+    public void ChangeEmail(Email newEmail)
+    {
+        Email = newEmail;
+        MarkAsUpdated();
+    }
+}
+```
+
+## Regras
+
+- Imutáveis após criação (sem setters públicos).
+- Validação no factory `Create()` — nunca construtor público permissivo.
+- Colocar em `Domain/{Context}/ValueObjects/` (específico) ou `Domain/Generic/ValueObjects/` (reutilizável).

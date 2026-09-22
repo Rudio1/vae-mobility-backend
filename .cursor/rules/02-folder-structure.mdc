@@ -1,0 +1,97 @@
+---
+description: Organização feature-first por contexto de negócio
+alwaysApply: true
+---
+
+# Estrutura de Pastas por Contexto
+
+## Regra principal
+
+Organizar por **contexto de negócio** em todas as camadas. Nunca por tipo técnico na raiz.
+
+```
+❌ Application/Services/, Application/Commands/ (na raiz)
+✅ Application/Auth/Commands/, Application/{Context}/Services/
+```
+
+## Contexto `Generic` (cross-cutting)
+
+Código **não específico de um contexto de negócio** fica em `Generic/`, reutilizável entre vários contextos.
+
+| Camada | Pasta | Conteúdo |
+|---|---|---|
+| Domain | `Generic/Entities/` | `Entity`, `AggregateRoot`, `IEntity` |
+| Domain | `Generic/ValueObjects/` | `ValueObject` |
+| Domain | `Generic/Validations/` | exceções, `DomainMessages` |
+| Domain | `Generic/Repositories/Interfaces/` | `IRepository`, `IUnitOfWork` |
+| Application | `Generic/` | `Result`, `ApplicationMessages` |
+| Application | `Generic/Services/Interfaces/` | contextos de usuário/tenant |
+| Infra.Data | `Generic/Repositories/` | `Repository<T>` base |
+
+**Regra:** se o código pertence a um único contexto, ele fica no contexto de negócio — **não** em `Generic`.
+
+## Domain — `{Context}/`
+
+```
+{Context}/
+  Entities/
+  Enums/
+  ValueObjects/          ← (se específico do contexto)
+  Services/
+    Interfaces/          ← I*DomainService
+    *DomainService.cs    ← implementação
+  Repositories/
+    Interfaces/          ← I*Repository
+    Filters/             ← (se necessário)
+    QueryResults/        ← (se necessário)
+  Commands/              ← (se necessário, comandos de domínio)
+```
+
+## Application — `{Context}/`
+
+```
+{Context}/
+  Commands/{UseCase}/
+  Queries/{UseCase}/
+  DataTransfer/
+    Request/
+    Response/
+  Profiles/              ← mapeamento Entity ↔ DTO
+  Services/
+    Interfaces/          ← portas de API/infra
+    *Service.cs          ← implementação
+  Validators/            ← FluentValidation (quando aplicável)
+```
+
+## Infra.Data — `{Context}/`
+
+```
+{Context}/
+  Mappings/              ← EF Core IEntityTypeConfiguration
+  Repositories/          ← implementação de I*Repository
+```
+
+## WebApi — `{Context}/`
+
+```
+Controllers/{Context}/     ← controllers do contexto
+Controllers/Generic/       ← ApiControllerBase e código HTTP compartilhado
+Infrastructure/            ← ApiResponse, middleware helpers, contextos HTTP
+```
+
+## Contextos atuais
+
+`Generic`, `Auth`, `Catalog`, `Media`
+
+Ao criar um módulo novo, adicionar o contexto nesta lista e registrar em `.cursor/rules/CHANGELOG.md`.
+
+## Regras
+
+- Tudo de um contexto fica junto; **nunca misturar contextos na mesma pasta**.
+- Um arquivo pertence a um único contexto.
+- **Interfaces de domain service** → `Domain/{Context}/Services/Interfaces/`.
+- **Interfaces de repositório** → `Domain/{Context}/Repositories/Interfaces/`.
+- **Implementação de domain service** → `Domain/{Context}/Services/`.
+- **Implementação de repositório** → `Infra.Data/{Context}/Repositories/`.
+- Application **não** define `I*Repository`; apenas consome domain services.
+- Alterações nas rules devem ser registradas em `.cursor/rules/CHANGELOG.md`.

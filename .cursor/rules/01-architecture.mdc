@@ -1,0 +1,46 @@
+---
+description: Arquitetura Clean Architecture, camadas e dependências do VaeMobility
+alwaysApply: true
+---
+
+# Arquitetura
+
+## Padrão
+
+Clean Architecture com CQRS leve. O domínio é soberano; infraestrutura é detalhe de implementação.
+
+## Camadas e responsabilidades
+
+| Camada | Projeto | Responsabilidade |
+|---|---|---|
+| API | `VaeMobility.WebApi` | HTTP, controllers, middleware |
+| Application | `VaeMobility.Application` | Orquestração de casos de uso |
+| Domain | `VaeMobility.Domain` | Regras de negócio, entidades, contratos |
+| Data | `VaeMobility.Infra.Data` | EF Core, repositórios, migrations |
+| External APIs | `VaeMobility.Infra.ExternalApis` | Integrações HTTP externas |
+| Jobs | `VaeMobility.Infra.Jobs` | Tarefas em background |
+
+## Dependências permitidas
+
+```
+WebApi → Application, Infra.Data, Infra.ExternalApis
+Jobs.Web → Infra.Jobs
+Infra.Jobs → Application
+Infra.ExternalApis → Application
+Application → Domain
+Infra.Data → Application, Domain
+```
+
+**Proibido:** `Domain` referenciar Application, Infra ou WebApi.
+
+## Fluxo obrigatório
+
+```
+Controller → Application (Handler/Service) → Domain Service → Repository → Database
+```
+
+- Controller nunca chama Repository, DbContext ou Domain Service diretamente.
+- Application **nunca** injeta `I*Repository` — apenas Domain Services e `IUnitOfWork`.
+- Application nunca contém regra de negócio.
+- **Domain Service** concentra regras de negócio e é o único que chama repositórios.
+- Integrações externas passam por `Infra.ExternalApis`, nunca pela Entity.

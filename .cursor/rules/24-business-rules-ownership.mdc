@@ -1,0 +1,16 @@
+---
+description: Domínio e regras de negócio ficam no backend — FE não reimplementa
+alwaysApply: true
+---
+
+# Regras de negócio no Domain
+
+## Princípio
+
+O **Domain/Application** deste backend é a fonte da verdade para cálculos, match, validações de domínio e interpretações de documentos.
+
+Se o frontend precisar de um comportamento novo, **implemente aqui** e exponha via API + `api-contract/`. Não espere que o FE "complete" a regra.
+
+## Contrato
+
+Alterações de payload/resposta: atualizar `api-contract/` no mesmo PR.

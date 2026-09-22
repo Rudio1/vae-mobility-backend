@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\VaeMobility.Application\VaeMobility.Application.csproj" />
+    <ProjectReference Include="..\VaeMobility.Infra.Jobs\VaeMobility.Infra.Jobs.csproj" />
+    <ProjectReference Include="..\VaeMobility.Infra.Data\VaeMobility.Infra.Data.csproj" />
+    <ProjectReference Include="..\VaeMobility.Infra.ExternalApis\VaeMobility.Infra.ExternalApis.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

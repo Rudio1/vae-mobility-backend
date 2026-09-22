@@ -1,0 +1,47 @@
+---
+description: Eventos de domínio — quando usar e como disparar integrações
+globs: src/VaeMobility.Domain/**
+alwaysApply: false
+---
+
+# Eventos de Domínio
+
+## Quando usar
+
+- Algo relevante aconteceu no domínio e **outros contextos** precisam reagir.
+- Exemplos: `OrderPlaced`, `UserRegistered`, `StockReserved`.
+
+## Quando NÃO usar
+
+- Lógica que cabe na própria Entity ou DomainService.
+- Integração simples dentro do mesmo caso de uso (chamar direto no Handler).
+
+## Padrão
+
+```csharp
+// Domain/Order/Entities/Order.cs
+public void Place()
+{
+    Status = OrderStatus.Placed;
+    _domainEvents.Add(new OrderPlacedEvent(Id, CustomerId));
+}
+
+// Domain/Generic/Entities/AggregateRoot.cs — coletar eventos
+private readonly List<IDomainEvent> _domainEvents = [];
+public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents.AsReadOnly();
+```
+
+## Disparo
+
+1. Entity registra evento internamente.
+2. Handler persiste e, **após SaveChanges**, publica eventos.
+3. Application ou Infra.Jobs executa integrações (email, fila, API).
+
+## Proibido
+
+```
+❌ Entity chama HttpClient, envia email ou publica em fila
+❌ Integração externa dentro do método de domínio
+```
+
+Eventos são **notificações internas**; side effects ficam fora do Domain.

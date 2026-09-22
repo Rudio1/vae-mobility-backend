@@ -1,0 +1,24 @@
+---
+description: Contexto do produto VAE Mobility — CMS de catálogo, não e-commerce
+alwaysApply: true
+---
+
+# Contexto do produto
+
+Este backend é o **CMS do site** VAE Mobility (catálogo + funil WhatsApp). Não é checkout.
+
+Antes de implementar qualquer feature, leia:
+
+- `docs/00-produto.md` — o que o CMS cobre e o que não cobre
+- `docs/01-catalogo-contrato.md` — campos front ↔ tabelas
+- `sql/README.md` — schema manual, sem EF Migrations
+- `api-contract/` — rotas e envelope
+
+## Regras rápidas
+
+- Público: `GET /api/catalog*` (só `active`)
+- Admin: `/api/admin/*` com JWT
+- `price: null` = consulte; nunca `0`
+- 3 highlights para publicar produto
+- Imagens no Cloudflare R2 (`IMediaStorage`); config pode estar vazia
+- Schema só em `sql/`. **Nunca** `dotnet ef migrations`

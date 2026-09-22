@@ -1,0 +1,46 @@
+---
+description: Quando logar, quando não logar, nunca engolir exceções
+globs: src/VaeMobility.WebApi/**,src/VaeMobility.Application/**
+alwaysApply: false
+---
+
+# Logging
+
+## Quando logar
+
+- Exceções não tratadas (Error + stack no log interno)
+- Falhas em integrações externas (`Infra.ExternalApis`)
+- Jobs em background que falharam
+- Operações críticas: autenticação, pagamentos, alterações de status
+
+## Quando NÃO logar
+
+- Dados sensíveis: senhas, tokens, CPF completo, cartão
+- Stack trace na **resposta** ao cliente (só no log interno)
+- Fluxo normal de leitura/escrita bem-sucedida (evitar ruído)
+
+## Níveis
+
+| Nível | Uso |
+|---|---|
+| Error | Exceção, falha de integração |
+| Warning | Retry, dado inesperado mas recuperável |
+| Information | Eventos de negócio relevantes (login, recurso criado) |
+| Debug | Apenas em desenvolvimento |
+
+## Regras
+
+```csharp
+// ❌ BAD — engolir exceção
+catch (Exception) { return BadRequest(); }
+
+// ✅ GOOD — logar e relançar ou mapear
+catch (Exception ex)
+{
+    logger.LogError(ex, "Failed to create product {ProductId}", id);
+    throw;
+}
+```
+
+- Usar structured logging (`{PropertyName}`).
+- Middleware global captura exceções e loga uma vez.

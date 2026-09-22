@@ -1,0 +1,53 @@
+---
+description: Repositories — apenas acesso a dados, sem regra de negócio
+globs: src/**/*Repository*.cs
+alwaysApply: false
+---
+
+# Repositories
+
+## Responsabilidade
+
+Repository **apenas acessa dados**. Nada mais.
+
+## O que o Repository faz
+
+- `GetById`, `List`, `Add`, `Update`, `Remove`
+- Queries com filtros, paginação e projeções
+- `AsNoTracking()` em leituras
+
+## O que o Repository NUNCA faz
+
+```
+❌ Calcular totais com regra de negócio
+❌ Validar se operação é permitida
+❌ Decidir fluxo (aprovar, cancelar, bloquear)
+❌ Chamar serviços externos
+```
+
+## Organização
+
+```
+Domain/{Context}/Repositories/Interfaces/IProductRepository.cs  → contrato
+Domain/{Context}/Services/Interfaces/IProductDomainService.cs   → contrato
+Domain/Generic/Repositories/Interfaces/IRepository.cs, IUnitOfWork.cs
+Infra.Data/{Context}/Repositories/ProductRepository.cs            → implementação
+```
+
+## Assinatura
+
+```csharp
+public interface IProductRepository
+{
+    Task<Product?> GetByIdAsync(Guid id, CancellationToken ct);
+    Task AddAsync(Product product, CancellationToken ct);
+}
+```
+
+- Interface no **Domain**; implementação no **Infra.Data**.
+- Sempre receber `CancellationToken`.
+- Retornar **entidades de domínio**, nunca DTOs.
+
+## Transações
+
+`SaveChanges` fica no `IUnitOfWork` (`Domain/Generic/Repositories/Interfaces/`), chamado pelo **Handler ou Application Service** após o Domain Service executar a operação.

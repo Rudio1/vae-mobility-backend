@@ -1,0 +1,55 @@
+---
+description: Controllers finos — apenas HTTP, sem lógica de negócio
+globs: src/VaeMobility.WebApi/**
+alwaysApply: false
+---
+
+# WebApi / Controllers
+
+## Responsabilidade
+
+Controller **apenas** traduz HTTP para Application e devolve resposta.
+
+## Fluxo obrigatório
+
+```
+Request → validar model state → chamar Handler → retornar Response
+```
+
+```csharp
+[ApiController]
+[Route("api/products")]
+public sealed class ProductController(ICreateProductHandler handler) : ControllerBase
+{
+    [HttpPost]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateProductRequest request,
+        CancellationToken ct)
+    {
+        var command = new CreateProductCommand(request.Name, request.Price);
+        var result = await handler.HandleAsync(command, ct);
+        return Ok(ApiResponse.Success(result));
+    }
+}
+```
+
+## O que Controller faz
+
+- Receber Request, validar `ModelState`
+- Montar Command/Query e chamar Handler
+- Retornar Response no formato padrão (`22-api-responses.mdc`)
+
+## O que Controller NUNCA faz
+
+```
+❌ Regra de negócio
+❌ Acesso a DbContext ou Repository
+❌ try/catch genérico que engole exceção
+❌ Retornar Entity diretamente
+```
+
+## Organização
+
+`WebApi/Controllers/{Context}/ProductController.cs`
+
+Ver também: `09-dto.mdc`, `15-security.mdc`, `22-api-responses.mdc`.

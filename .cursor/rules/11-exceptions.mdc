@@ -1,0 +1,50 @@
+---
+description: Hierarquia de exceções — Business, Validation, NotFound, Unauthorized
+globs: src/**/*Exception*.cs
+alwaysApply: false
+---
+
+# Exceptions
+
+## Hierarquia
+
+```
+Exception
+  └── DomainException (base do domínio)
+        ├── BusinessException      → regra de negócio violada
+        ├── ValidationException  → entrada inválida (alternativa ao FluentValidation)
+        ├── NotFoundException    → recurso não encontrado
+        └── UnauthorizedException → acesso negado
+```
+
+## Uso por camada
+
+| Exceção | Lançada em | HTTP Status |
+|---|---|---|
+| `BusinessException` | Domain | 422 Unprocessable Entity |
+| `ValidationException` | Application/Validator | 400 Bad Request |
+| `NotFoundException` | Handler (recurso ausente) | 404 Not Found |
+| `UnauthorizedException` | Application/Auth | 401/403 |
+
+## Exemplo
+
+```csharp
+// Domain
+public sealed class BusinessException : DomainException
+{
+    public BusinessException(string message) : base(message) { }
+}
+
+// Entity
+public void Cancel()
+{
+    if (Status == OrderStatus.Shipped)
+        throw new BusinessException("Cannot cancel a shipped order.");
+}
+```
+
+## Regras
+
+- Mensagens claras e em português para o usuário final.
+- **Nunca** expor stack trace na resposta HTTP.
+- Middleware global traduz exceções para `ApiResponse` (ver `22-api-responses.mdc`).

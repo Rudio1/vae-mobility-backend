@@ -1,0 +1,62 @@
+---
+description: Padrão de casos de uso com handlers manuais (sem MediatR)
+globs: src/VaeMobility.Application/**
+alwaysApply: false
+---
+
+# Casos de Uso (Handlers Manuais)
+
+## Estrutura por operação
+
+Cada caso de uso é uma pasta com 4 arquivos:
+
+```
+Application/Product/Commands/CreateProduct/
+  CreateProductCommand.cs
+  ICreateProductHandler.cs
+  CreateProductHandler.cs
+  CreateProductValidator.cs
+```
+
+## Contratos
+
+```csharp
+public sealed record CreateProductCommand(string Name, decimal Price);
+
+public interface ICreateProductHandler
+{
+    Task<ProductResponse> HandleAsync(CreateProductCommand command, CancellationToken ct);
+}
+```
+
+## Handler
+
+```csharp
+public sealed class CreateProductHandler(
+    IProductDomainService productDomainService,
+    IUnitOfWork unitOfWork,
+    CreateProductValidator validator) : ICreateProductHandler
+{
+    public async Task<ProductResponse> HandleAsync(CreateProductCommand command, CancellationToken ct)
+    {
+        await validator.ValidateAndThrowAsync(command, ct);
+        var product = await productDomainService.CreateAsync(command.Name, command.Price, ct);
+        await unitOfWork.SaveChangesAsync(ct);
+        return ProductResponse.From(product);
+    }
+}
+```
+
+Application **nunca** injeta `I*Repository`. Persistência passa pelo Domain Service; o Handler só orquestra e commita via `IUnitOfWork`.
+
+## Registro DI
+
+Registrar cada handler em `Application/DependencyInjection/DependencyInjection.cs`:
+
+```csharp
+services.AddScoped<ICreateProductHandler, CreateProductHandler>();
+```
+
+## Queries
+
+Mesmo padrão: `GetProductQuery` + `IGetProductHandler` + `GetProductHandler`.

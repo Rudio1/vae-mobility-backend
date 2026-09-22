@@ -1,0 +1,51 @@
+---
+description: Performance — paginação, projeções, CancellationToken, evitar N+1
+globs: src/VaeMobility.Infra.Data/**,src/VaeMobility.Application/**
+alwaysApply: false
+---
+
+# Performance
+
+## Listagens
+
+- **Sempre paginação** em endpoints que retornam coleções.
+- Parâmetros padrão: `page` (1-based), `pageSize` (max 100).
+- Retornar `totalCount` para o cliente paginar.
+
+## Queries
+
+```csharp
+// ✅ Projection — só campos necessários
+await context.Products
+    .AsNoTracking()
+    .Where(p => p.TenantId == tenantId)
+    .Select(p => new ProductListItem(p.Id, p.Name, p.Price))
+    .Skip((page - 1) * pageSize)
+    .Take(pageSize)
+    .ToListAsync(ct);
+
+// ❌ Carregar entidade inteira para listagem
+await context.Products.Include(p => p.Category).Include(p => p.Items).ToListAsync(ct);
+```
+
+## Obrigatório
+
+- `CancellationToken` em todo método async.
+- `AsNoTracking()` em leituras.
+- `Select` / projeção em vez de `SELECT *` implícito.
+
+## Evitar N+1
+
+- Usar `Include` com critério, ou uma query com projeção.
+- Nunca loop com query individual por item:
+
+```csharp
+// ❌ N+1
+foreach (var order in orders)
+    order.Items = await repo.GetItemsAsync(order.Id, ct);
+```
+
+## Commands
+
+- Carregar apenas entidades necessárias para o caso de uso.
+- `SaveChanges` uma vez por transação, no final do Handler.

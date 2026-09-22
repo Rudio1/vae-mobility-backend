@@ -1,0 +1,49 @@
+---
+description: FluentValidation para entrada; regra de negócio no Domain
+globs: src/**/*Validator*.cs
+alwaysApply: false
+---
+
+# Validação
+
+## Separação obrigatória
+
+| Tipo | Onde | Exemplo |
+|---|---|---|
+| Validação de entrada | FluentValidation | campo obrigatório, formato, tamanho |
+| Regra de negócio | Domain | estoque insuficiente, usuário bloqueado |
+
+## FluentValidation
+
+Um validator por Command/Request, colocado junto ao caso de uso:
+
+```
+Application/Product/Commands/CreateProduct/
+  CreateProductCommand.cs
+  CreateProductValidator.cs
+```
+
+```csharp
+public sealed class CreateProductValidator : AbstractValidator<CreateProductCommand>
+{
+    public CreateProductValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
+        RuleFor(x => x.Price).GreaterThan(0);
+    }
+}
+```
+
+## Validação de negócio
+
+```csharp
+// ✅ Domain — Entity ou DomainService
+product.ReserveStock(quantity); // lança DomainException se inválido
+
+// ❌ Validator — não colocar regra de negócio aqui
+RuleFor(x => x.Quantity).Must(q => stock.HasAvailable(q));
+```
+
+## Invocação
+
+Validator é chamado no **Handler** antes de qualquer operação de domínio ou persistência.

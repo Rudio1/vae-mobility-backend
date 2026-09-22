@@ -1,0 +1,39 @@
+---
+description: Convenções de nomenclatura de classes, interfaces e arquivos
+globs: src/**/*.cs
+alwaysApply: false
+---
+
+# Nomenclatura
+
+## Padrão
+
+`{Ação}{Entidade}{Tipo}` — sufixo indica o papel.
+
+| Tipo | Exemplo |
+|---|---|
+| Service (Application) | `ProductService` |
+| Domain Service | `OrderDomainService` |
+| Repository | `ProductRepository` |
+| Command | `CreateProductCommand` |
+| Query | `GetProductQuery` |
+| Handler | `CreateProductHandler` |
+| Validator | `CreateProductValidator` |
+| Request/Response | `CreateProductRequest`, `ProductResponse` |
+| Configuration (EF) | `ProductConfiguration` |
+
+## Proibido
+
+```
+❌ ServiceProduct, RepositoryProduct
+❌ Helper1, Util, Manager (genérico)
+❌ ProductHelper, StringUtils
+```
+
+## Interfaces
+
+Prefixo `I` + mesmo nome da implementação: `IProductRepository` → `ProductRepository`.
+
+## Pastas e namespaces
+
+Código em **inglês**. Namespaces seguem o contexto: `VaeMobility.Application.Product.Commands`.

@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VaeMobility.Application/VaeMobility.Application.csproj" />
+    <Project Path="src/VaeMobility.Domain/VaeMobility.Domain.csproj" />
+    <Project Path="src/VaeMobility.Infra.Data/VaeMobility.Infra.Data.csproj" />
+    <Project Path="src/VaeMobility.Infra.ExternalApis/VaeMobility.Infra.ExternalApis.csproj" />
+    <Project Path="src/VaeMobility.Infra.Jobs/VaeMobility.Infra.Jobs.csproj" />
+    <Project Path="src/VaeMobility.Jobs.Web/VaeMobility.Jobs.Web.csproj" />
+    <Project Path="src/VaeMobility.WebApi/VaeMobility.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VaeMobility.Tests/VaeMobility.Tests.csproj" />
+  </Folder>
+</Solution>

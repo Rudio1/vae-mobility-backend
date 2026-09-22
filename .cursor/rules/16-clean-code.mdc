@@ -1,0 +1,50 @@
+---
+description: Código limpo — métodos pequenos, SRP, sem Util/Helper
+globs: src/**/*.cs
+alwaysApply: false
+---
+
+# Código Limpo
+
+## Métodos
+
+- Pequenos, uma responsabilidade.
+- Se passar de ~20 linhas, extrair método privado ou classe.
+- Nomes que descrevem intenção: `CalculateDiscount`, não `Process`.
+
+## Classes
+
+- Uma responsabilidade por classe (SRP).
+- Preferir composição a herança profunda.
+
+## Proibido
+
+```
+❌ Helper, Util, Manager (genéricos)
+❌ Classes estáticas com regra de negócio
+❌ Métodos estáticos que decidem fluxo de domínio
+❌ Comentários que repetem o código
+```
+
+## Comentários
+
+- Apenas para lógica não óbvia ou decisão de negócio complexa.
+- Código autoexplicativo > comentário.
+
+## Exemplo
+
+```csharp
+// ❌ BAD
+public static class OrderHelper
+{
+    public static bool CanCancel(Order o) => o.Status != Shipped && o.Total > 0;
+}
+
+// ✅ GOOD — regra no Domain
+public void Cancel() { ... }
+```
+
+## Consistência
+
+- Seguir convenções de `03-naming.mdc` e estrutura de `02-folder-structure.mdc`.
+- Reutilizar abstrações existentes antes de criar novas.

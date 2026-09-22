@@ -1,0 +1,46 @@
+---
+description: Segurança — input, secrets, stack trace e queries parametrizadas
+globs: src/VaeMobility.WebApi/**
+alwaysApply: false
+---
+
+# Segurança
+
+## Input
+
+- **Nunca confiar** em dados do cliente — validar sempre.
+- Usar FluentValidation + tipos fortes (Value Objects no Domain).
+- Sanitizar apenas na camada de apresentação quando necessário (HTML).
+
+## Secrets
+
+```
+❌ Senha, API key ou connection string no código ou appsettings commitado
+✅ User Secrets (dev), variáveis de ambiente ou vault (prod)
+```
+
+## Respostas de erro
+
+- **Nunca** retornar stack trace ao cliente.
+- Mensagens genéricas para erros internos (500).
+- Detalhes de validação/negócio apenas quando seguro.
+
+## Banco de dados
+
+- EF Core já parametriza — **nunca** concatenar SQL manual.
+- Se usar SQL raw: sempre parâmetros nomeados.
+
+```csharp
+// ❌ SQL injection
+context.Database.ExecuteSqlRaw($"SELECT * FROM Users WHERE Email = '{email}'");
+
+// ✅ Parametrizado
+context.Database.ExecuteSqlRaw("SELECT * FROM Users WHERE Email = {0}", email);
+```
+
+## Autenticação
+
+- Endpoints protegidos com `[Authorize]`.
+- Validar tenant/usuário no Handler, não só no controller.
+
+Ver também: `22-api-responses.mdc` para formato de erro.

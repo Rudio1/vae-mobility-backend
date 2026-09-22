@@ -1,0 +1,30 @@
+---
+description: Schema SQL manual — proibido EF Migrations
+globs: sql/**,src/VaeMobility.Infra.Data/**
+alwaysApply: false
+---
+
+# Schema (sem EF Migrations)
+
+Este projeto **não usa** `dotnet ef migrations`.
+
+## Onde vive o schema
+
+Scripts numerados em `sql/`. Veja `sql/README.md`.
+
+O `AppDbContext` e os `IEntityTypeConfiguration` **mapeiam** o que o SQL criou. Não geram tabelas.
+
+## Proibido
+
+```
+❌ dotnet ef migrations add
+❌ dotnet ef database update
+❌ src/VaeMobility.Infra.Data/Migrations/
+❌ editar script já aplicado em banco existente (crie um 00N_ novo)
+```
+
+## Quando o modelo mudar
+
+1. Ajustar entidades + mappings EF
+2. Criar `sql/00N_contexto_acao.sql`
+3. Atualizar `sql/README.md` e `docs/01-catalogo-contrato.md` se o contrato mudar

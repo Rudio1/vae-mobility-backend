@@ -1,0 +1,71 @@
+---
+description: Formato único de respostas da API — sucesso, erro e paginação
+globs: src/VaeMobility.WebApi/**
+alwaysApply: false
+---
+
+# Respostas da API
+
+## Envelope padrão
+
+```csharp
+public sealed record ApiResponse<T>(bool Success, T? Data, ApiError? Error)
+{
+    public static ApiResponse<T> Ok(T data) => new(true, data, null);
+    public static ApiResponse<T> Fail(ApiError error) => new(false, default, error);
+}
+
+public sealed record ApiError(string Code, string Message, IReadOnlyList<FieldError>? Fields = null);
+public sealed record FieldError(string Field, string Message);
+```
+
+## Sucesso (200/201)
+
+```json
+{
+  "success": true,
+  "data": { "id": "...", "name": "Product A" },
+  "error": null
+}
+```
+
+## Erro de validação (400)
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Validation failed.",
+    "fields": [{ "field": "name", "message": "Name is required." }]
+  }
+}
+```
+
+## Erro de negócio (422)
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": { "code": "BUSINESS_ERROR", "message": "Insufficient stock." }
+}
+```
+
+## Paginação
+
+```json
+{
+  "success": true,
+  "data": {
+    "items": [...],
+    "page": 1,
+    "pageSize": 20,
+    "totalCount": 150
+  },
+  "error": null
+}
+```
+
+Middleware global mapeia exceções (`11-exceptions.mdc`) para este formato.

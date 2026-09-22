@@ -1,0 +1,61 @@
+---
+description: Manter api-contract/ sincronizado com rotas da API
+globs: src/VaeMobility.WebApi/Controllers/**, src/VaeMobility.Application/**/Commands/**, src/VaeMobility.Application/**/Request/**, src/VaeMobility.Application/**/DataTransfer/**
+alwaysApply: false
+---
+
+# Documentação API (api-contract/)
+
+## Regra principal
+
+Ao **criar, alterar ou remover** qualquer rota, DTO, response ou validador da API, atualizar a documentação em `api-contract/`.
+
+## O que atualizar
+
+| Mudança no código | Arquivo em api-contract/ |
+|---|---|
+| Novo contexto/módulo | criar `{contexto}.md` e indexar no README |
+| Novo enum ou valor de enum | `enums.md` |
+| Envelope, auth flow, headers, CORS | `README.md` |
+| Códigos de erro, HTTP, exemplos de falha | `errors.md` |
+| Qualquer alteração | `CHANGELOG.md` |
+
+## Checklist obrigatório
+
+Antes de finalizar a tarefa/PR:
+
+- [ ] Rota documentada com finalidade, auth, request e response
+- [ ] Campos obrigatórios vs opcionais marcados explicitamente
+- [ ] Exemplos JSON de request e response atualizados
+- [ ] Enums conferidos (serialização como string)
+- [ ] Entrada adicionada em `api-contract/CHANGELOG.md`
+- [ ] Se a regra mudou: entrada em `.cursor/rules/CHANGELOG.md`
+
+## Template por endpoint
+
+```markdown
+### MÉTODO /api/rota
+
+**Finalidade:** ...
+
+**Autenticação:** JWT | Público
+
+**Request body:**
+| Campo | Tipo | Obrigatório | Descrição |
+
+**Exemplo de request:** ```json ... ```
+
+**Resposta 200 — data:** ...
+
+**Exemplo de response:** ```json ... ```
+
+**Respostas de erro:** ...
+
+**Notas para o front:** ...
+```
+
+## Aviso no README
+
+O `api-contract/README.md` deve manter no topo o aviso de manutenção obrigatória.
+
+Ver também: `08-webapi.mdc`, `09-dto.mdc`, `22-api-responses.mdc`.

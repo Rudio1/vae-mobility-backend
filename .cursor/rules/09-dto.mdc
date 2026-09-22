@@ -1,0 +1,48 @@
+---
+description: DTOs — Request/Response, nunca expor ou receber Entity
+globs: src/**/*{Request,Response,Dto}*.cs
+alwaysApply: false
+---
+
+# DTOs
+
+## Regra principal
+
+**Nunca** retornar Entity. **Nunca** receber Entity. Sempre DTO.
+
+## Tipos
+
+| Direção | Tipo | Exemplo |
+|---|---|---|
+| Entrada API | Request | `CreateProductRequest` |
+| Saída API | Response | `ProductResponse` |
+| Lista paginada | Response + wrapper | `PagedResponse<ProductResponse>` |
+| Interno Application | Command/Query | `CreateProductCommand` |
+
+## Organização
+
+```
+Application/{Context}/DataTransfer/Request/CreateProductRequest.cs
+Application/{Context}/DataTransfer/Response/ProductResponse.cs
+Application/{Context}/Commands/CreateProduct/CreateProductCommand.cs
+```
+
+## Mapeamento
+
+```csharp
+// ✅ GOOD — factory estático ou mapper dedicado
+public sealed record ProductResponse(Guid Id, string Name)
+{
+    public static ProductResponse From(Product product) =>
+        new(product.Id, product.Name);
+}
+
+// ❌ BAD — expor Entity na API
+public async Task<Product> Get(Guid id) => await repo.GetByIdAsync(id, ct);
+```
+
+## Proibido
+
+- Entity como parâmetro ou retorno de endpoint
+- DTO com lógica de negócio
+- DTO referenciando tipos de EF ou infraestrutura

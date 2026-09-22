@@ -1,0 +1,57 @@
+---
+description: Regras do domínio — entidades soberanas, domain services e proibições
+globs: src/VaeMobility.Domain/**
+alwaysApply: false
+---
+
+# Domain
+
+## Princípio
+
+O domínio é soberano. **Toda regra de negócio** vive aqui — nunca em Controller, Repository, Application ou EF.
+
+## Onde colocar regras
+
+| Situação | Local |
+|---|---|
+| Regra de uma entidade | Método na Entity |
+| Regra entre entidades ou com persistência | `{Context}DomainService` em `Services/` |
+| Contrato de domain service | `I{Context}DomainService` em `Services/Interfaces/` |
+| Contrato de persistência | `I{Entity}Repository` em `Repositories/Interfaces/` |
+| Chamada a repositório | **Somente** dentro de Domain Service |
+
+## Entities
+
+Entidades **apenas**: validam, alteram estado, executam comportamento.
+
+```csharp
+// ✅ GOOD
+user.ChangeEmail(email);
+user.Block();
+order.Cancel();
+
+// ❌ BAD
+user.Save();
+user.SendEmail();
+user.FindById(id);
+```
+
+## Proibido nas Entities
+
+- Acesso a banco, repository, Http, cache, filesystem
+- Dependências de frameworks (EF, ASP.NET)
+- DTOs ou tipos de Application/WebApi
+
+## Domain Services
+
+Usar quando a regra envolve **mais de uma entidade**, **consulta/persistência via repositório**, ou não cabe na Entity.
+
+- Domain Service é o **único** consumidor de `I*Repository` no sistema.
+- Application e Infra **não** injetam repositórios (exceto implementações em `Infra.Data`).
+
+```csharp
+// Domain/{Context}/Services/ProductDomainService.cs
+public sealed class ProductDomainService(IProductRepository productRepository) { ... }
+```
+
+Ver também: `18-domain-events.mdc`, `19-value-objects.mdc`, `21-audit-soft-delete.mdc`.

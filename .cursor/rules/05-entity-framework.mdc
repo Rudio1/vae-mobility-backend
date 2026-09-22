@@ -1,0 +1,48 @@
+---
+description: Padrões Entity Framework Core — configurações, queries e performance
+globs: src/VaeMobility.Infra.Data/**
+alwaysApply: false
+---
+
+# Entity Framework
+
+## Configuração
+
+- Sempre `IEntityTypeConfiguration<T>` em `Infra.Data/{Context}/Mappings/`.
+- **Nunca** configurar entidades dentro do `AppDbContext`.
+- **Nunca** colocar regra de negócio nas configurações.
+
+```csharp
+// Infra.Data/Product/Mappings/ProductConfiguration.cs
+public sealed class ProductConfiguration : IEntityTypeConfiguration<Product> { ... }
+```
+
+## DbContext
+
+`AppDbContext` apenas registra `DbSet` e chama `ApplyConfigurationsFromAssembly`. Sem lógica de negócio.
+
+## Queries
+
+```csharp
+// ✅ Leitura — sempre AsNoTracking
+await context.Products
+    .AsNoTracking()
+    .Where(p => p.TenantId == tenantId)
+    .ToListAsync(cancellationToken);
+
+// ❌ Leitura sem tracking
+await context.Products.Where(...).ToListAsync(ct);
+```
+
+## Obrigatório
+
+- `CancellationToken` em todo método async de repositório/query.
+- Carregamento **explicit** ou **projection** — nunca Lazy Loading.
+- Projeções (`Select`) em vez de carregar entidade completa para leitura.
+
+## Proibido
+
+- Regra de negócio em `OnModelCreating`, configurations ou repositórios.
+- `Include` em cadeia sem necessidade (risco de N+1).
+
+Ver também: `06-repositories.mdc`, `14-performance.mdc`, `20-migrations.mdc`.
