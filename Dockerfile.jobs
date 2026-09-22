@@ -1,0 +1,29 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+COPY ["nuget.config", "./"]
+COPY ["Directory.Build.props", "./"]
+COPY ["src/VaeMobility.Jobs.Web/VaeMobility.Jobs.Web.csproj", "src/VaeMobility.Jobs.Web/"]
+COPY ["src/VaeMobility.Application/VaeMobility.Application.csproj", "src/VaeMobility.Application/"]
+COPY ["src/VaeMobility.Domain/VaeMobility.Domain.csproj", "src/VaeMobility.Domain/"]
+COPY ["src/VaeMobility.Infra.Data/VaeMobility.Infra.Data.csproj", "src/VaeMobility.Infra.Data/"]
+COPY ["src/VaeMobility.Infra.ExternalApis/VaeMobility.Infra.ExternalApis.csproj", "src/VaeMobility.Infra.ExternalApis/"]
+COPY ["src/VaeMobility.Infra.Jobs/VaeMobility.Infra.Jobs.csproj", "src/VaeMobility.Infra.Jobs/"]
+
+RUN dotnet restore "src/VaeMobility.Jobs.Web/VaeMobility.Jobs.Web.csproj"
+
+COPY . .
+
+RUN dotnet publish "src/VaeMobility.Jobs.Web/VaeMobility.Jobs.Web.csproj" \
+    -c Release \
+    -o /app/publish \
+    /p:UseAppHost=false
+
+RUN cp src/VaeMobility.Jobs.Web/appsettings.example.json /app/publish/appsettings.json
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+
+COPY --from=build /app/publish .
+
+ENTRYPOINT ["dotnet", "VaeMobility.Jobs.Web.dll"]
